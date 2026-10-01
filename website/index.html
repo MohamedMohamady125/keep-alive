@@ -1,0 +1,321 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="Keep Alive keeps your computer active by nudging the mouse and scrolling now and then. Free for Mac and Windows.">
+<title>Keep Alive</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700;12..96,800&family=Figtree:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: one column; hero pairs the pitch with a live "screen" where a cursor keeps nudging, then download, setup steps, FAQ. */
+:root {
+  --bg: #F1F4EF;
+  --surface: #FFFFFF;
+  --line: #D6DDD3;
+  --fg: #15201A;
+  --muted: #56645B;
+  --accent: #1E7A4C;
+  --accent-ink: #FFFFFF;
+  --accent-soft: #DCEEE2;
+  --screen: #15201A;
+  --screen-fg: #CFE9D9;
+  --font-display: "Bricolage Grotesque", "Avenir Next", "Segoe UI", system-ui, sans-serif;
+  --font-body: "Figtree", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0F1512; --surface: #161E19; --line: #28332C; --fg: #E4ECE6; --muted: #98A89E;
+    --accent: #4CC486; --accent-ink: #0B140F; --accent-soft: #1B3326; --screen: #0A0F0C; --screen-fg: #A9E3C3;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0F1512; --surface: #161E19; --line: #28332C; --fg: #E4ECE6; --muted: #98A89E;
+  --accent: #4CC486; --accent-ink: #0B140F; --accent-soft: #1B3326; --screen: #0A0F0C; --screen-fg: #A9E3C3;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  background: var(--bg); color: var(--fg);
+  font-family: var(--font-body); font-size: 17px; line-height: 1.6;
+  padding-inline: 20px; padding-block: 0 64px;
+}
+.wrap { max-width: 1040px; margin: 0 auto; display: flex; flex-direction: column; gap: 88px; }
+h1, h2, h3 { font-family: var(--font-display); line-height: 1.08; text-wrap: balance; margin: 0; }
+p { margin: 0; }
+
+/* nav */
+nav { display: flex; align-items: center; justify-content: space-between; padding-block: 22px; }
+.brand { display: flex; align-items: center; gap: 10px; font-family: var(--font-display); font-weight: 700; font-size: 20px; }
+.led { width: 10px; height: 10px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 0 4px var(--accent-soft); animation: pulse 2s ease-in-out infinite; }
+@keyframes pulse { 50% { box-shadow: 0 0 0 7px var(--accent-soft); } }
+nav a { color: var(--muted); text-decoration: none; font-weight: 500; font-size: 15px; }
+nav a:hover { color: var(--fg); }
+
+/* hero */
+.hero { display: grid; grid-template-columns: 1.05fr 1fr; gap: 48px; align-items: center; margin-top: -40px; }
+.hero > * { min-width: 0; }
+.hero h1 { font-size: clamp(40px, 6vw, 68px); font-weight: 800; letter-spacing: -0.02em; }
+.hero h1 em { font-style: normal; color: var(--accent); }
+.lede { margin-top: 20px; font-size: 19px; color: var(--muted); max-width: 30em; }
+.cta-row { margin-top: 32px; display: flex; flex-wrap: wrap; gap: 12px; }
+
+.btn {
+  display: inline-flex; align-items: center; gap: 10px;
+  font: 600 16px/1 var(--font-body); padding: 15px 22px; border-radius: 10px;
+  text-decoration: none; border: 1.5px solid var(--line); color: var(--fg); background: var(--surface);
+  transition: transform .15s ease, border-color .15s ease;
+}
+.btn:hover { transform: translateY(-1px); border-color: var(--fg); }
+.btn:focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
+.btn.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+.btn.primary:hover { border-color: var(--accent); filter: brightness(1.05); }
+.btn svg { width: 18px; height: 18px; flex: none; }
+.btn small { font-weight: 500; opacity: .75; font-size: 13px; }
+.btn[aria-disabled="true"] { cursor: not-allowed; }
+.hint { margin-top: 14px; font-size: 14px; color: var(--muted); }
+
+/* the screen */
+.screen {
+  background: var(--screen); border-radius: 18px; padding: 14px; aspect-ratio: 4 / 3; max-width: 100%;
+  display: flex; flex-direction: column; gap: 12px; box-shadow: 0 30px 60px -30px rgba(10, 30, 18, .45);
+}
+.screen-bar { display: flex; gap: 6px; }
+.screen-bar i { width: 9px; height: 9px; border-radius: 50%; background: var(--screen-fg); opacity: .25; }
+.stage { position: relative; flex: 1; border-radius: 10px; overflow: hidden;
+  background: radial-gradient(circle at 50% 45%, rgba(76,196,134,.14), transparent 60%); }
+.window {
+  position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);
+  width: min(78%, 280px); background: var(--surface); color: var(--fg); border-radius: 10px;
+  padding: 16px 18px; font-size: 13px; display: flex; flex-direction: column; gap: 8px;
+}
+.window b { font-family: var(--font-display); font-size: 16px; }
+.window .row { display: flex; justify-content: space-between; color: var(--muted); }
+.window .row span:last-child { font-family: var(--font-mono); color: var(--fg); }
+.window .stop { margin-top: 4px; text-align: center; background: var(--accent); color: var(--accent-ink); border-radius: 6px; padding: 7px; font-weight: 600; }
+.window .status { font-family: var(--font-mono); font-size: 11.5px; color: var(--accent); text-align: center; font-variant-numeric: tabular-nums; }
+.cursor { position: absolute; left: 70%; top: 74%; width: 22px; height: 22px; transition: transform .12s ease-out; filter: drop-shadow(0 2px 3px rgba(0,0,0,.35)); }
+.cursor path { fill: #FFFFFF; stroke: #0B140F; stroke-width: 1.4; }
+.scroll-tag { position: absolute; right: 12px; top: 12px; font: 500 11px var(--font-mono); color: var(--screen-fg); opacity: 0; transition: opacity .3s; }
+.scroll-tag.on { opacity: .85; }
+
+/* sections */
+.eyebrow { font: 500 13px var(--font-mono); letter-spacing: .08em; text-transform: uppercase; color: var(--accent); }
+.section-head { display: flex; flex-direction: column; gap: 10px; margin-bottom: 32px; }
+.section-head h2 { font-size: clamp(30px, 4vw, 42px); font-weight: 700; letter-spacing: -0.015em; }
+.section-head p { color: var(--muted); max-width: 36em; }
+
+.features { display: grid; grid-template-columns: repeat(3, 1fr); gap: 32px; }
+.feature { display: flex; flex-direction: column; gap: 8px; padding-top: 18px; border-top: 2px solid var(--fg); }
+.feature h3 { font-size: 21px; font-weight: 700; }
+.feature p { color: var(--muted); font-size: 16px; }
+.feature code { font-family: var(--font-mono); font-size: 14px; color: var(--fg); }
+
+.tabs { display: inline-flex; gap: 4px; padding: 4px; border: 1.5px solid var(--line); border-radius: 12px; background: var(--surface); margin-bottom: 24px; }
+.tab { font: 600 15px var(--font-body); padding: 9px 18px; border-radius: 8px; border: 0; background: transparent; color: var(--muted); cursor: pointer; }
+.tab[aria-selected="true"] { background: var(--fg); color: var(--bg); }
+.tab:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+
+.steps { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; background: var(--surface); border: 1.5px solid var(--line); border-radius: 14px; }
+.steps li { display: grid; grid-template-columns: 44px 1fr; gap: 16px; padding: 20px 24px; border-top: 1px solid var(--line); }
+.steps li:first-child { border-top: 0; }
+.steps .n { font: 500 15px var(--font-mono); width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; background: var(--accent-soft); color: var(--accent); }
+.steps .body { min-width: 0; display: flex; flex-direction: column; gap: 4px; }
+.steps strong { font-weight: 600; }
+.steps .body p { color: var(--muted); font-size: 16px; }
+.path { font-family: var(--font-mono); font-size: 14px; background: var(--accent-soft); color: var(--fg); padding: 1px 7px; border-radius: 5px; white-space: nowrap; }
+
+.faq { display: grid; grid-template-columns: repeat(2, 1fr); gap: 32px 48px; }
+.faq div { display: flex; flex-direction: column; gap: 6px; }
+.faq h3 { font-size: 19px; font-weight: 700; }
+.faq p { color: var(--muted); font-size: 16px; }
+
+footer { border-top: 1px solid var(--line); padding-top: 24px; display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px; color: var(--muted); font-size: 14px; }
+
+@media (max-width: 820px) {
+  .hero { grid-template-columns: 1fr; margin-top: 0; }
+  .features, .faq { grid-template-columns: 1fr; }
+  .wrap { gap: 64px; }
+  .steps li { grid-template-columns: 34px 1fr; padding: 18px; gap: 14px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .led { animation: none; }
+  .cursor { transition: none; }
+}
+</style>
+</head>
+<body>
+
+
+<div class="wrap">
+  <nav>
+    <div class="brand"><span class="led" aria-hidden="true"></span>Keep Alive</div>
+    <a href="#setup">Setup guide</a>
+  </nav>
+
+  <header class="hero">
+    <div>
+      <h1>Your computer stays <em>active</em>. You don't have to touch it.</h1>
+      <p class="lede">Keep Alive moves your mouse a few pixels every 20 seconds and scrolls now and then, so apps that check for activity never think you left.</p>
+      <div class="cta-row" id="downloads">
+        <a class="btn" id="dl-mac" href="#">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M16.4 12.6c0-2.4 2-3.6 2.1-3.7-1.2-1.7-3-1.9-3.6-2-1.5-.2-3 .9-3.8.9s-2-.9-3.3-.9c-1.7 0-3.3 1-4.2 2.5-1.8 3.1-.5 7.7 1.3 10.2.9 1.2 1.9 2.6 3.2 2.6s1.8-.8 3.3-.8 2 .8 3.3.8 2.2-1.3 3-2.5c1-1.4 1.4-2.8 1.4-2.9 0 0-2.7-1-2.7-4.2zM14 5.3c.7-.8 1.1-2 1-3.1-1 0-2.2.7-2.9 1.5-.6.7-1.2 1.9-1 3 1.1.1 2.2-.6 2.9-1.4z"/></svg>
+          Download for Mac <small>Apple chip</small>
+        </a>
+        <a class="btn" id="dl-win" href="#">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M3 5.5 10.4 4.5v7H3zM11.4 4.3 21 3v8.5h-9.6zM3 12.5h7.4v7L3 18.5zM11.4 12.5H21V21l-9.6-1.3z"/></svg>
+          Download for Windows
+        </a>
+      </div>
+      <p class="hint" id="dl-hint">Free. No account, no install wizard. Open it and press Start.</p>
+    </div>
+
+    <div class="screen" aria-label="Animation of Keep Alive nudging the cursor">
+      <div class="screen-bar" aria-hidden="true"><i></i><i></i><i></i></div>
+      <div class="stage" id="stage">
+        <div class="window">
+          <b>Keep Alive</b>
+          <div class="row"><span>Nudge every</span><span>20 s</span></div>
+          <div class="row"><span>Scroll every</span><span>3 nudges</span></div>
+          <div class="stop">Stop</div>
+          <div class="status" id="status">Running… 0 nudges</div>
+        </div>
+        <svg class="cursor" id="cursor" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 2.5v17l4.6-4.3 3 6.6 3-1.4-3-6.4h6.3z"/></svg>
+        <span class="scroll-tag" id="scrolltag">↕ scrolling</span>
+      </div>
+    </div>
+  </header>
+
+  <section>
+    <div class="section-head">
+      <span class="eyebrow">What it does</span>
+      <h2>Small, quiet, and it stays out of your way</h2>
+    </div>
+    <div class="features">
+      <div class="feature">
+        <h3>Moves the mouse</h3>
+        <p>Every 20 seconds the cursor slides <code>5 px</code> and comes right back. You won't lose your place.</p>
+      </div>
+      <div class="feature">
+        <h3>Scrolls now and then</h3>
+        <p>Every third nudge it scrolls down a little and back up, so apps that watch scrolling see activity too.</p>
+      </div>
+      <div class="feature">
+        <h3>Stops when you say</h3>
+        <p>Click Stop, close the window, or set a timer like <code>60 min</code> and it turns itself off.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="setup">
+    <div class="section-head">
+      <span class="eyebrow">Setup · about a minute</span>
+      <h2>How to start using it</h2>
+      <p>You only do this once. After that, open the app and press Start.</p>
+    </div>
+    <div class="tabs" role="tablist" aria-label="Choose your computer">
+      <button class="tab" role="tab" id="tab-mac" aria-selected="true" aria-controls="steps-mac">Mac</button>
+      <button class="tab" role="tab" id="tab-win" aria-selected="false" aria-controls="steps-win">Windows</button>
+    </div>
+
+    <ol class="steps" id="steps-mac" role="tabpanel" aria-labelledby="tab-mac">
+      <li><span class="n">1</span><div class="body"><strong>Download and unzip</strong><p>Double-click <span class="path">KeepAlive-mac.zip</span> in your Downloads folder.</p></div></li>
+      <li><span class="n">2</span><div class="body"><strong>Move it to Applications</strong><p>Drag Keep Alive into your Applications folder.</p></div></li>
+      <li><span class="n">3</span><div class="body"><strong>Open it the first time with a right-click</strong><p>Right-click Keep Alive, choose Open, then click Open again. Double-clicking won't work the first time.</p></div></li>
+      <li><span class="n">4</span><div class="body"><strong>Allow it to move the mouse</strong><p>Open <span class="path">System Settings → Privacy &amp; Security → Accessibility</span> and turn on Keep Alive.</p></div></li>
+      <li><span class="n">5</span><div class="body"><strong>Reopen and press Start</strong><p>Quit the app, open it again, and click Start. Leave the small window open; minimizing it is fine.</p></div></li>
+    </ol>
+
+    <ol class="steps" id="steps-win" role="tabpanel" aria-labelledby="tab-win" hidden>
+      <li><span class="n">1</span><div class="body"><strong>Download it</strong><p>Save <span class="path">KeepAlive.exe</span> anywhere, like your Desktop.</p></div></li>
+      <li><span class="n">2</span><div class="body"><strong>Double-click to open</strong><p>If a blue box says "Windows protected your PC", click More info, then Run anyway. This only happens once.</p></div></li>
+      <li><span class="n">3</span><div class="body"><strong>Press Start</strong><p>Leave the small window open; minimizing it is fine. Click Stop or close it when you're done.</p></div></li>
+    </ol>
+  </section>
+
+  <section>
+    <div class="section-head">
+      <span class="eyebrow">Questions</span>
+      <h2>Good to know</h2>
+    </div>
+    <div class="faq">
+      <div><h3>Why does my computer show a warning?</h3><p>The app isn't registered with Apple or Microsoft yet, so they show a caution the first time. It doesn't collect or send anything.</p></div>
+      <div><h3>Will it mess with what I'm doing?</h3><p>The cursor moves a few pixels and returns. Scrolling happens in whatever is under the mouse, so leave it over the desktop or a blank area.</p></div>
+      <div><h3>Does it work on older Macs?</h3><p>This version is for Macs with Apple chips (M1 and newer). Ask the person who sent you this page if you have an Intel Mac.</p></div>
+      <div><h3>How do I turn it off?</h3><p>Click Stop, or close the window. Nothing keeps running in the background after that.</p></div>
+    </div>
+  </section>
+
+  <footer>
+    <span>Keep Alive · version 1.0</span>
+    <span>Works on macOS and Windows</span>
+  </footer>
+</div>
+
+<script>
+// Download links point at the newest GitHub Release.
+// Replace YOUR-GITHUB-USERNAME with your GitHub username (and the repo name if you change it).
+const REPO = "YOUR-GITHUB-USERNAME/keep-alive";
+const DOWNLOADS = REPO.startsWith("YOUR-") ? { mac: "", windows: "" } : {
+  mac: `https://github.com/${REPO}/releases/latest/download/KeepAlive-mac.zip`,
+  windows: `https://github.com/${REPO}/releases/latest/download/KeepAlive.exe`
+};
+
+(function () {
+  const mac = document.getElementById("dl-mac");
+  const win = document.getElementById("dl-win");
+  const hint = document.getElementById("dl-hint");
+  const isWin = /Windows/i.test(navigator.userAgent);
+
+  // Highlight the button for the visitor's computer and open the matching setup tab.
+  (isWin ? win : mac).classList.add("primary");
+  if (isWin) selectTab("win");
+
+  let missing = false;
+  [[mac, DOWNLOADS.mac], [win, DOWNLOADS.windows]].forEach(([el, url]) => {
+    if (url) { el.href = url; el.target = "_blank"; el.rel = "noopener"; }
+    else {
+      missing = true;
+      el.setAttribute("aria-disabled", "true");
+      el.addEventListener("click", e => e.preventDefault());
+    }
+  });
+  if (missing) hint.textContent = "Download links are being added. Check back soon, or ask the person who sent you this page.";
+
+  // Tabs
+  function selectTab(which) {
+    ["mac", "win"].forEach(k => {
+      document.getElementById("tab-" + k).setAttribute("aria-selected", String(k === which));
+      document.getElementById("steps-" + k).hidden = k !== which;
+    });
+  }
+  document.getElementById("tab-mac").addEventListener("click", () => selectTab("mac"));
+  document.getElementById("tab-win").addEventListener("click", () => selectTab("win"));
+
+  // Hero animation: nudge the cursor, scroll every third nudge.
+  const cursor = document.getElementById("cursor");
+  const status = document.getElementById("status");
+  const tag = document.getElementById("scrolltag");
+  const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  let n = 0;
+  function stamp() { return new Date().toTimeString().slice(0, 8); }
+  function nudge() {
+    n++;
+    const scroll = n % 3 === 0;
+    if (!reduce) {
+      cursor.style.transform = "translateX(9px)";
+      setTimeout(() => { cursor.style.transform = "translateX(0)"; }, 160);
+    }
+    if (scroll) { tag.classList.add("on"); setTimeout(() => tag.classList.remove("on"), 1200); }
+    status.textContent = `Running… ${n} nudges (last ${scroll ? "scrolled" : "moved"} ${stamp()})`;
+  }
+  nudge();
+  setInterval(nudge, 2000); // sped up for the demo; the real app waits 20 seconds
+})();
+</script>
+
+</body>
+</html>
